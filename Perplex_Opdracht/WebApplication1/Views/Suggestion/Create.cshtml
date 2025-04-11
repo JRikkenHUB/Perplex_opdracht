@@ -1,0 +1,171 @@
+﻿@model SuggestionModel
+
+@{
+    ViewData["Title"] = "Suggestie aanmaken";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="Create">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="form-group">
+        <label asp-for="Onderwerp" class="control-label"></label>
+        <input asp-for="Onderwerp" class="form-control" />
+        <span asp-validation-for="Onderwerp" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Beschrijving" class="control-label"></label>
+        <textarea asp-for="Beschrijving" class="form-control" rows="5"></textarea>
+        <span asp-validation-for="Beschrijving" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Type" class="control-label"></label>
+        <select asp-for="Type" class="form-control">
+            <option value="suggestie">Suggestie</option>
+            <option value="uitje">Uitje</option>
+        </select>
+        <span asp-validation-for="Type" class="text-danger"></span>
+    </div>
+
+    <div class="form-group" id="beginDatumGroup" style="display:none;">
+        <label asp-for="BeginDatum" class="control-label"></label>
+        <input asp-for="BeginDatum" class="form-control" type="datetime-local" />
+        <span asp-validation-for="BeginDatum" class="text-danger"></span>
+    </div>
+
+    <div class="form-group" id="eindDatumGroup" style="display:none;">
+        <label asp-for="EindDatum" class="control-label"></label>
+        <input asp-for="EindDatum" class="form-control" type="datetime-local" />
+        <span asp-validation-for="EindDatum" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="UserName" class="control-label"></label>
+        <input asp-for="UserName" class="form-control" />
+        <span asp-validation-for="UserName" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="UserId" class="control-label"></label>
+        <input asp-for="UserId" class="form-control" type="number" />
+        <span asp-validation-for="UserId" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label">Categories (comma separated)</label>
+        <input type="text" id="categoriesInput" class="form-control" />
+        <button type="button" id="addCategory" class="btn btn-secondary mt-2">Add Category</button>
+        <div id="categoriesList" class="mt-2">
+            @foreach (var category in Model.Categories)
+            {
+                <span class="badge badge-primary mr-1">
+                    @category
+                    <button type="button" class="close" onclick="removeCategory('@category')">&times;</button>
+                </span>
+            }
+        </div>
+        <input type="hidden" asp-for="Categories" id="categoriesHidden" />
+    </div>
+
+    <div class="form-group">
+        <input type="submit" value="Create" class="btn btn-primary" />
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Show/hide date fields based on type selection
+            $('#Type').change(function() {
+                if ($(this).val() === 'uitje') {
+                    $('#beginDatumGroup, #eindDatumGroup').show();
+                } else {
+                    $('#beginDatumGroup, #eindDatumGroup').hide();
+                }
+            }).trigger('change');
+
+            // Category management
+            var categories = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Categories));
+
+            $('#addCategory').click(function() {
+                var newCategory = $('#categoriesInput').val().trim();
+                if (newCategory && !categories.includes(newCategory)) {
+                    categories.push(newCategory);
+                    updateCategories();
+                    $('#categoriesInput').val('');
+                }
+            });
+
+            window.removeCategory = function(category) {
+                categories = categories.filter(c => c !== category);
+                updateCategories();
+            };
+
+            function updateCategories() {
+                $('#categoriesList').empty();
+                categories.forEach(function(category) {
+                    $('#categoriesList').append(
+                        `<span class="badge badge-primary mr-1">${category} ` +
+                        `<button type="button" class="close" onclick="removeCategory('${category}')">&times;</button></span>`
+                    );
+                });
+                $('#categoriesHidden').val(JSON.stringify(categories));
+            }
+        });
+
+            $('#suggestionForm').submit(async function(e) {
+            e.preventDefault();
+
+            const submitBtn = $(this).find('button[type="submit"]');
+            submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status"></span> Verwerken...');
+
+            const categories = JSON.parse($('#Categories').val() || '[]');
+
+            const formData = {
+                onderwerp: $('#Onderwerp').val(),
+                beschrijving: $('#Beschrijving').val(),
+                userId: $('#UserId').val() ? parseInt($('#UserId').val()) : null,
+                userName: $('#UserName').val(),
+                type: $('#Type').val(),
+                beginDatum: $('#BeginDatum').val(),
+                eindDatum: $('#EindDatum').val(),
+                categories: categories // Send all categories or use categories.slice(0,1) for first item
+            };
+
+            try {
+                const response = await fetch('/api/suggestion', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    // Successful submission - navigate to success page
+                    window.location.href = '@Url.Action("Success", "Suggestion")';
+                } else {
+                    const errorData = await response.json();
+                    showErrors(errorData.errors || [errorData.message]);
+                }
+            } catch (error) {
+                showErrors(['Er is een fout opgetreden tijdens het verzenden.']);
+                console.error('Submission error:', error);
+            } finally {
+                submitBtn.prop('disabled', false).text('Indienen');
+            }
+        });
+
+        function showErrors(errors) {
+            const errorContainer = $('#errorMessages');
+            errorContainer.empty().show();
+            errors.forEach(error => {
+                errorContainer.append($('<div>').text(error));
+            });
+        }
+    </script>
+}
