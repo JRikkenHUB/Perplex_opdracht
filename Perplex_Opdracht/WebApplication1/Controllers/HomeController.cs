@@ -24,7 +24,7 @@ namespace WebApplication1.Controllers
              .Include(i => i.Categories)
              .Include(i => i.Comments)
              .OrderByDescending(i => i.CreatedAt)
-             .Take(5) // Show 5 most recent ideas
+             .Take(6) 
              .Select(i => new SuggestionViewModel
              {
                  Id = i.Id,

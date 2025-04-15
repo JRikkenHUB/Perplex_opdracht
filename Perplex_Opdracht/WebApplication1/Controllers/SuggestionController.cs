@@ -47,7 +47,7 @@ public class SuggestionController : Controller
 
                     if (result.Success)
                     {
-                        return RedirectToAction("Success", "SuggestionSuccess");
+                        return RedirectToAction("Index", "Home");
                     }
                     else {
                         return BadRequest(result.Error);
