@@ -1,0 +1,57 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="container mt-4">
+    <div class="text-center mb-4">
+        <h1 class="display-4">Welcome to Perplex Ideas</h1>
+        <p class="lead">Browse the latest suggestions from your colleagues</p>
+    </div>
+
+    @if (Model.Count > 0)
+    {
+            <div class="row">
+            @foreach (var idea in Model)
+            {
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <h5 class="card-title">@idea.Onderwerp</h5>
+                                        <span class="badge bg-primary">@idea.CommentCount comments</span>
+                                    </div>
+                                    <p class="card-text">@idea.Beschrijving</p>
+
+                            @if (idea.Categories.Count > 0)
+                            {
+                                            <div class="mt-2">
+                                    @foreach (var category in idea.Categories)
+                                    {
+                                                        <span class="badge bg-secondary me-1">@category</span>
+                                    }
+                                            </div>
+                            }
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <small class="text-muted">
+                                        Submitted by @(idea.UserName ?? "Anonymous") 
+                                        on @idea.CreatedAt.ToString("MMMM dd, yyyy")
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+            }
+            </div>
+    }
+    else
+    {
+            <div class="alert alert-info">
+                <h4 class="alert-heading">No ideas yet!</h4>
+                <p>Be the first to submit a suggestion.</p>
+                <hr>
+                <a asp-controller="Suggestion" asp-action="Create" class="btn btn-primary">
+                    Submit Your Idea
+                </a>
+            </div>
+    }
+</div>
