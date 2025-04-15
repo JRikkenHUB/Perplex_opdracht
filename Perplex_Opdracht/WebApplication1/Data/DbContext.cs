@@ -6,6 +6,12 @@ public class AppDbContext : DbContext
     public DbSet<Category> Categories { get; set; }
     public DbSet<Comment> Comments { get; set; }
 
+    public AppDbContext(DbContextOptions<AppDbContext> options)
+       : base(options)
+    {
+    }
+
+
     protected override void OnConfiguring(DbContextOptionsBuilder options)
         => options.UseSqlite("Data Source=PerplexIdeas.db");
 

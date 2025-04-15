@@ -1,13 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace WebApplication1.Controllers
+public class SuggestionSuccessController : Controller
 {
-    public class SuggestionSuccesController : Controller
+    [HttpGet("success")]
+    public IActionResult Success()
     {
-        [HttpGet("success")]
-        public IActionResult Success()
-        {
-            return View();
-        }
+        ViewBag.Message = "Je idee is succesvol ontvangen!";
+        return View();
     }
 }

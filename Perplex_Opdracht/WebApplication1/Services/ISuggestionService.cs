@@ -5,11 +5,11 @@ public interface ISuggestionService
     Task<ApiResponse> SubmitIdeaAsync(SuggestionModel submission);
 }
 
-public class IdeaService : ISuggestionService
+public class SuggestionService : ISuggestionService
 {
     private readonly IStorageProvider _storage;
 
-    public IdeaService(IStorageProvider storage)
+    public SuggestionService(IStorageProvider storage)
     {
         _storage = storage;
     }
@@ -18,7 +18,6 @@ public class IdeaService : ISuggestionService
     {
         try
         {
-            // Additional business logic validation
             if (submission.Type == "uitje" && submission.BeginDatum > submission.EindDatum)
             {
                 return new ApiResponse(false, "Eind datum moet na begin datum liggen");

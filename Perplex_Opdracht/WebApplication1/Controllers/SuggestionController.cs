@@ -6,9 +6,9 @@ using WebApplication1.Models;
 
 public class SuggestionController : Controller
 {
-    public readonly IAPIController _controller;
-    public SuggestionController(APIController controller) {
-        _controller = controller;
+    public readonly IAPIService _api;
+    public SuggestionController(IAPIService controller) {
+        _api = controller;
     }
 
     public IActionResult Create()
@@ -35,6 +35,7 @@ public class SuggestionController : Controller
                 {
                     ModelState.AddModelError("EindDatum", "Eind datum is verplicht voor uitje");
                 }
+                return View(model);
             }
 
             if (ModelState.IsValid)
@@ -42,10 +43,15 @@ public class SuggestionController : Controller
                 try{
                     var jsonRequest = TransformToJson(model);
 
-                    var result = await _controller.SubmitIdea(jsonRequest);
+                    SubmissionResult result = await _api.SubmitIdea(jsonRequest);
 
-                    return RedirectToAction("Success");
-
+                    if (result.Success)
+                    {
+                        return RedirectToAction("Success", "SuggestionSuccess");
+                    }
+                    else {
+                        return BadRequest(result.Error);
+                    }
                 }
                 catch (Exception ex) {
                     ModelState.AddModelError("", $"Error submitting idea: {ex.Message}");
